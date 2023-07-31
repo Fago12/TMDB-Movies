@@ -3,13 +3,33 @@
 // imports
 import { sidebar } from './sidebar.js';
 import { api_key, imageBaseURL, fetchDataFromServer } from './api.js';
+import { createMovieCard } from './movie-card.js';
 
 // sidebar toggle
 sidebar();
 
+// URLs
 const url = `https://api.themoviedb.org/3/movie/popular?api_key=${api_key}&page=1`;
 const genreURL = `https://api.themoviedb.org/3/genre/movie/list?api_key=${api_key}`;
+
 const pageContent = document.querySelector('[page-content]');
+
+// homepage sections
+
+const homePageSections = [
+  {
+    title: 'Upcoming Movies',
+    path: '/movie/upcoming',
+  },
+  {
+    title: "Today's Trending Movies",
+    path: '/trending/movie/week',
+  },
+  {
+    title: 'Top Rated Movies',
+    path: '/movie/top_rated',
+  },
+];
 
 // fetch all genres
 const genreList = {
@@ -86,7 +106,10 @@ const heroBanner = function ({ results: movieList }) {
 
               <p class="banner-text">${overview}</p>
 
-              <a href="./detail.html" class="btn">
+              <a 
+                href="./detail.html" 
+                class="btn" 
+                onClick="getMovieDetail(${id})">
                 <img
                   src="./assets/images/play_circle.png"
                   width="24"
@@ -124,6 +147,13 @@ const heroBanner = function ({ results: movieList }) {
   pageContent.appendChild(banner);
 
   addHeroSlide();
+
+  // fetch data for homepage sections
+  for (const { title, path } of homePageSections) {
+    const dynamicURL = `https://api.themoviedb.org/3${path}?api_key=${api_key}&page=1`;
+
+    fetchDataFromServer(dynamicURL, createMovieList, title);
+  }
 };
 
 // hero slider functionality
@@ -151,4 +181,28 @@ const addHeroSlide = function () {
   };
 
   addEventOnElements(sliderControls, 'click', sliderStart);
+};
+
+const createMovieList = function ({ results: movieList }, title) {
+  const movieListElem = document.createElement('section');
+  movieListElem.classList.add('movie-list');
+  movieListElem.ariaLabel = `${title}`;
+
+  movieListElem.innerHTML = `
+        <div class="title-wrapper">
+          <h3 class="title-large">${title}</h3>
+        </div>
+
+        <div class="slider-list">
+          <div class="slider-inner"></div>
+        </div>
+ `;
+
+  for (const movie of movieList) {
+    const movieCard = createMovieCard(movie);
+
+    movieListElem.querySelector('.slider-inner').appendChild(movieCard);
+  }
+
+  pageContent.appendChild(movieListElem);
 };
