@@ -4,6 +4,7 @@
 import { api_key, imageBaseURL, fetchDataFromServer } from './api.js';
 import { sidebar } from './sidebar.js';
 import { createMovieCard } from './movie-card.js';
+import { search } from './search.js';
 
 // sidebar toggle
 sidebar();
@@ -171,4 +172,33 @@ fetchDataFromServer(url, function (movie) {
   }
 
   pageContent.appendChild(movieDetail);
+
+  fetchDataFromServer(recommendationURL, addSuggestedMovies);
 });
+
+const addSuggestedMovies = function ({ results: movieList }, title) {
+  const movieListElem = document.createElement('section');
+  movieListElem.classList.add('movie-list');
+  movieListElem.ariaLabel = 'You May Also Like';
+
+  movieListElem.innerHTML = `
+        <div class="title-wrapper">
+          <h3 class="title-large">You May Also Like</h3>
+        </div>
+
+        <div class="slider-list">
+          <div class="slider-inner"></div>
+        </div>
+ `;
+
+  for (const movie of movieList) {
+    const movieCard = createMovieCard(movie);
+
+    movieListElem.querySelector('.slider-inner').appendChild(movieCard);
+  }
+
+  pageContent.appendChild(movieListElem);
+};
+
+// search functionality
+search();
